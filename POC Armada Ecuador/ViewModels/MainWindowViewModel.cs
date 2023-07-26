@@ -81,7 +81,7 @@ namespace POC_Armada_Ecuador.ViewModels {
     /// <summary>
     /// 
     /// </summary>
-    private Canvas ManeuManeuveringBoardCanvas { get; set; }
+    private Canvas ManeuveringBoardCanvas { get; set; }
 
     /// <summary>
     /// 
@@ -94,7 +94,7 @@ namespace POC_Armada_Ecuador.ViewModels {
         UpdateCanvas();
       });
 
-      LoadWindowCommand = new DelegateCommand<Canvas>(canvas => ManeuManeuveringBoardCanvas = canvas);
+      LoadWindowCommand = new DelegateCommand<Canvas>(canvas => ManeuveringBoardCanvas = canvas);
 
       LoadMapViewCommand = new DelegateCommand<MapView>(mapView => {
         MapView = mapView;
@@ -164,9 +164,9 @@ namespace POC_Armada_Ecuador.ViewModels {
     /// 
     /// </summary>
     private void UpdateCanvas() {
-      var offset = VisualTreeHelper.GetOffset(ManeuManeuveringBoardCanvas);
-      var delta = new Point(ScreenShip.X - offset.X - (0.5 * ManeuManeuveringBoardCanvas.Width), ScreenShip.Y - offset.Y - (0.5 * ManeuManeuveringBoardCanvas.Height));
-      var transform = ManeuManeuveringBoardCanvas.RenderTransform;
+      var offset = VisualTreeHelper.GetOffset(ManeuveringBoardCanvas);
+      var delta = new Point(ScreenShip.X - offset.X - (0.5 * ManeuveringBoardCanvas.Width), ScreenShip.Y - offset.Y - (0.5 * ManeuveringBoardCanvas.Height));
+      var transform = ManeuveringBoardCanvas.RenderTransform;
       (transform as TranslateTransform).X = delta.X;
       (transform as TranslateTransform).Y = delta.Y;
 
