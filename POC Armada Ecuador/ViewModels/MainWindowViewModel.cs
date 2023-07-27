@@ -81,6 +81,11 @@ namespace POC_Armada_Ecuador.ViewModels {
     /// <summary>
     /// 
     /// </summary>
+    public DelegateCommand AddPolylineCommand { get; private set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
     private Canvas ManeuveringBoardCanvas { get; set; }
 
     /// <summary>
@@ -115,6 +120,39 @@ namespace POC_Armada_Ecuador.ViewModels {
         }
       });
 
+      AddPolylineCommand = new DelegateCommand(async () => {
+        MapView.SketchEditor.GeometryChanged += (o, e) => {
+          if(e.OldGeometry != null) {
+            var points = (e.NewGeometry as Polyline).Parts[0].Points;
+            var startPoint = points[points.Count - 2];
+            var endPoint = points[points.Count - 1];
+            var midPoint = new MapPoint(0.5 * (startPoint.X + endPoint.X), 0.5 * (startPoint.Y + endPoint.Y));
+            var distance = GeometryEngine.DistanceGeodetic(startPoint, endPoint, LinearUnits.NauticalMiles, null, GeodeticCurveType.Geodesic);
+            var texto = $"{distance.Distance:0} {LinearUnits.NauticalMiles.Abbreviation}";
+
+            var ceo = GraphicsOverlays.FirstOrDefault(go => go.Id == "CirclesElipsesOverlay");
+            if(ceo != null) {
+              var t = new Graphic() {
+                Geometry = midPoint,
+                Symbol = new TextSymbol() {
+                  Text = texto,
+                  Size = 12,
+                  OffsetY = 8,
+                  Angle = distance.Azimuth1 - 90,
+                  Color = System.Drawing.Color.Red,
+                  FontFamily = "Console",
+                  VerticalAlignment = Esri.ArcGISRuntime.Symbology.VerticalAlignment.Middle,
+                  HorizontalAlignment = Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Center
+                }
+              };
+              ceo.Graphics.Add(t);
+            }
+          }
+        };
+        var geometry = await MapView.SketchEditor.StartAsync(SketchCreationMode.Polyline, false);
+        AddGraphic(geometry, SketchCreationMode.Polyline);
+      });
+
       SetMap();
       SetGraphicsOverlays();
     }
@@ -122,9 +160,16 @@ namespace POC_Armada_Ecuador.ViewModels {
     private void AddGraphic(Esri.ArcGISRuntime.Geometry.Geometry geometry, SketchCreationMode mode) {
       var ceo = GraphicsOverlays.FirstOrDefault(go => go.Id == "CirclesElipsesOverlay");
       if(ceo != null) {
+        Symbol symbol = null;
+        if(geometry.GeometryType == GeometryType.Polygon) {
+          symbol = MapView.SketchEditor.Style.FeedbackFillSymbol;
+        }
+        else if(geometry.GeometryType == GeometryType.Polyline) {
+          symbol = MapView.SketchEditor.Style.FeedbackLineSymbol;
+        }
         var g = new Graphic() {
           Geometry = geometry,
-          Symbol = MapView.SketchEditor.Style.FeedbackFillSymbol
+          Symbol = symbol
         };
         ceo.Graphics.Add(g);
         var center = geometry.Extent.GetCenter();
@@ -141,7 +186,7 @@ namespace POC_Armada_Ecuador.ViewModels {
 
           texto = $"x = {x}\ny = {y}\nr = {r}";
         }
-        else {
+        else if(mode == SketchCreationMode.Ellipse) {
           var r1 = geometry.Extent.Width / 2;
           var r2 = geometry.Extent.Height / 2;
           texto = $"x = {x}\ny = {y}\nr1 = {r1}\nr2 = {r2}";
@@ -152,6 +197,8 @@ namespace POC_Armada_Ecuador.ViewModels {
           Symbol = new TextSymbol() {
             Text = texto,
             Size = 12,
+            Color = System.Drawing.Color.White,
+            FontFamily = "Console",
             VerticalAlignment = Esri.ArcGISRuntime.Symbology.VerticalAlignment.Middle,
             HorizontalAlignment = Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Center
           }

@@ -55,14 +55,18 @@
               Margin="10"
               Padding="20"
               HorizontalAlignment="Left"
-              Content="Circulo"
-              Grid.Row="1" />
+              Content="Circulo" />
       <Button Command="{Binding AddEllipseCommand}"
               Margin="10"
               Padding="20"
               HorizontalAlignment="Left"
               Content="Elipse"
               Grid.Row="1" />
+      <Button Command="{Binding AddPolylineCommand}"
+              Margin="10"
+              Padding="20"
+              HorizontalAlignment="Center"
+              Content="Polilinea" />
     </StackPanel>
   </Grid>
 </Window>
